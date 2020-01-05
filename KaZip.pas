@@ -760,26 +760,41 @@ begin
 	RegisterComponents('KA', [TKAZip]);
 end;
 
+function zs2s(value: TZipString): string;
+begin
+  Result := value;
+end;
+
+function as2s(value: RawByteString): string;
+begin
+  Result := value;
+end;
+
+function s2zs(value: string): TZipString;
+begin
+  Result := value;
+end;
+
 function ToZipName(FileName: UnicodeString): TZipString;
 var
 	P: Integer;
 begin
-	Result := FileName;
-	Result := StringReplace(Result, '\', '/', [rfReplaceAll]);
-	P := Pos(':/', Result);
+	Result := s2zs(FileName);
+	Result := s2zs(StringReplace(zs2s(Result), '\', '/', [rfReplaceAll]));
+	P := Pos(':/', zs2s(Result));
 	if P > 0 then
 	begin
 		System.Delete(Result, 1, P + 1);
 	end;
-	P := Pos('//', Result);
+	P := Pos('//', zs2s(Result));
 	if P > 0 then
 	begin
 		System.Delete(Result, 1, P + 1);
-		P := Pos('/', Result);
+		P := Pos('/', zs2s(Result));
 		if P > 0 then
 		begin
 			System.Delete(Result, 1, P);
-			P := Pos('/', Result);
+			P := Pos('/', zs2s(Result));
 			if P > 0 then
 				System.Delete(Result, 1, P);
 		end;
@@ -1015,7 +1030,7 @@ end;
 
 procedure TKAZipEntriesEntry.SetComment(const Value: UnicodeString);
 begin
-	FCentralDirectoryFile.FileComment := Value;
+	FCentralDirectoryFile.FileComment := s2zs(Value);
 	FCentralDirectoryFile.FileCommentLength := Length(FCentralDirectoryFile.FileComment);
 	FParent.Rebuild;
 	if not FParent.FParent.FBatchMode then
@@ -1028,11 +1043,11 @@ procedure TKAZipEntriesEntry.SetFileName(const Value: UnicodeString);
 var
 	fn: string;
 begin
-	fn := ToZipName(Value);
+	fn := zs2s(ToZipName(Value));
 	if FParent.IndexOf(FN) > -1 then
 		raise EKaZipException.Create('File with same name already exists in Archive');
 
-	FCentralDirectoryFile.FileName := fn;
+	FCentralDirectoryFile.FileName := s2zs(fn);
 	FCentralDirectoryFile.FilenameLength := Length(fn);
 	if not FParent.FParent.FBatchMode then
 	begin
@@ -1756,10 +1771,11 @@ var
 begin
 	Result := -1;
 
-	fn := ToZipName(FileName);
+	fn := zs2s(ToZipName(FileName));
 	for X := 0 to Count - 1 do
 	begin
-		if AnsiCompareText(fn, ToZipName(Items[X].FCentralDirectoryFile.FileName)) = 0 then
+		if AnsiCompareText(fn, zs2s(ToZipName(
+				zs2s(Items[X].FCentralDirectoryFile.FileName)))) = 0 then
 		begin
 			Result := X;
 			Exit;
@@ -1794,7 +1810,7 @@ begin
 	if not FParent.FStoreRelativePath then
 		ItemName := ExtractFileName(ItemName);
 
-	ItemName := ToZipName(ItemName); //standardize ItemName into Zip allowed filenames
+	ItemName := zs2s(ToZipName(ItemName)); //standardize ItemName into Zip allowed filenames
 
 	//If an item with this name already exists then remove it
 	i := Self.IndexOf(ItemName);
@@ -1836,7 +1852,7 @@ begin
 	Result.FLocalFile.UncompressedSize := uncompressedLength;
 	Result.FLocalFile.FilenameLength := Length(ItemName);
 	Result.FLocalFile.ExtraFieldLength := 0;
-	Result.FLocalFile.FileName := ItemName;
+	Result.FLocalFile.FileName := s2zs(ItemName);
 	Result.FLocalFile.ExtraField := '';
 	Result.FLocalFile.CompressedData := ''; //not used
 
@@ -1937,7 +1953,7 @@ begin
 	Result.FCentralDirectoryFile.InternalFileAttributes := 0;
 	Result.FCentralDirectoryFile.ExternalFileAttributes := FileAttr;
 	Result.FCentralDirectoryFile.RelativeOffsetOfLocalHeader := newLocalEntryPosition;
-	Result.FCentralDirectoryFile.FileName := ItemName;
+	Result.FCentralDirectoryFile.FileName := s2zs(ItemName);
 	Result.FCentralDirectoryFile.ExtraField := '';
 	Result.FCentralDirectoryFile.FileComment := '';
 
@@ -2020,7 +2036,7 @@ begin
 			ZipComment := FParent.Comment.Text;
 			if not FParent.FStoreRelativePath then
 				ItemName := ExtractFileName(ItemName);
-			ItemName := ToZipName(ItemName);
+			ItemName := zs2s(ToZipName(ItemName));
 			I := IndexOf(ItemName);
 			if I > -1 then
 			begin
@@ -2088,7 +2104,7 @@ begin
 				UncompressedSize := UL;
 				FilenameLength := Length(ItemName);
 				ExtraFieldLength := 0;
-				FileName := ItemName;
+				FileName := s2zs(ItemName);
 				ExtraField := '';
 				CompressedData := '';
 			end;
@@ -2111,7 +2127,7 @@ begin
 				InternalFileAttributes := 0;
 				ExternalFileAttributes := FileAttr;
 				RelativeOffsetOfLocalHeader := TempStream.Position;
-				FileName := ItemName;
+				FileName := s2zs(ItemName);
 				ExtraField := '';
 				FileComment := '';
 			end;
@@ -2161,7 +2177,7 @@ begin
 			ZipComment := FParent.Comment.Text;
 			if not FParent.FStoreRelativePath then
 				ItemName := ExtractFileName(ItemName);
-			ItemName := ToZipName(ItemName);
+			ItemName := zs2s(ToZipName(ItemName));
 			I := IndexOf(ItemName);
 			if I > -1 then
 			begin
@@ -2229,7 +2245,7 @@ begin
 				UncompressedSize := UL;
 				FilenameLength := Length(ItemName);
 				ExtraFieldLength := 0;
-				FileName := ItemName;
+				FileName := s2zs(ItemName);
 				ExtraField := '';
 				CompressedData := '';
 			end;
@@ -2252,7 +2268,7 @@ begin
 				InternalFileAttributes := 0;
 				ExternalFileAttributes := FileAttr;
 				RelativeOffsetOfLocalHeader := TempMSStream.Position;
-				FileName := ItemName;
+				FileName := s2zs(ItemName);
 				ExtraField := '';
 				FileComment := '';
 			end;
@@ -2314,7 +2330,7 @@ var
 	NoMore: Boolean;
 begin
 	//  Result := False;
-	FN := ExtractFilePath(ToDosName(ToZipName(ItemName)));
+	FN := ExtractFilePath(ToDosName(zs2s(ToZipName(ItemName))));
 	TN := FN;
 	INCN := '';
 	MS := TMemoryStream.Create;
@@ -2855,8 +2871,8 @@ var
 	X: Integer;
 	L: Integer;
 begin
-	FN := ToZipName(IncludeTrailingPathDelimiter(FolderName));
-	NFN := ToZipName(IncludeTrailingPathDelimiter(NewFolderName));
+	FN := zs2s(ToZipName(IncludeTrailingPathDelimiter(FolderName)));
+	NFN := zs2s(ToZipName(IncludeTrailingPathDelimiter(NewFolderName)));
 	L := Length(FN);
 	if IndexOf(NFN) = -1 then
 	begin
@@ -2936,7 +2952,7 @@ begin
 	if not FParent.FStoreRelativePath then
 		itemName := ExtractFileName(itemName);
 
-	itemName := ToZipName(itemName);
+	itemName := zs2s(ToZipName(itemName));
 
 	//If an item with this name already exists then remove it
 	i := Self.IndexOf(itemName);
@@ -2972,7 +2988,7 @@ begin
 	newEntry.FLocalFile.UncompressedSize := 0; //don't know it yet, will back-fill
 	newEntry.FLocalFile.FilenameLength := Length(itemName);
 	newEntry.FLocalFile.ExtraFieldLength := 0;
-	newEntry.FLocalFile.FileName := ItemName;
+	newEntry.FLocalFile.FileName := s2zs(ItemName);
 	newEntry.FLocalFile.ExtraField := '';
 	newEntry.FLocalFile.CompressedData := ''; //not used here, because we'll be writing directly to a stream later
 
@@ -2993,7 +3009,7 @@ begin
 	newEntry.FCentralDirectoryFile.InternalFileAttributes := 0;
 	newEntry.FCentralDirectoryFile.ExternalFileAttributes := FileAttr;
 	newEntry.FCentralDirectoryFile.RelativeOffsetOfLocalHeader := newLocalEntryPosition;
-	newEntry.FCentralDirectoryFile.FileName := itemName;
+	newEntry.FCentralDirectoryFile.FileName := s2zs(itemName);
 	newEntry.FCentralDirectoryFile.ExtraField := '';
 	newEntry.FCentralDirectoryFile.FileComment := '';
 
@@ -3843,7 +3859,7 @@ class procedure TCRC32Stream.SelfTest;
 			finally
 				cs.Free;
 			end;
-			CheckEqualsString(InputData, ss.DataString);
+			CheckEqualsString(as2s(InputData), ss.DataString);
 		finally
 			ss.Free;
 		end;
@@ -3859,13 +3875,13 @@ class procedure TCRC32Stream.SelfTest;
 			finally
 				cs.Free;
 			end;
-			CheckEqualsString(InputData, ss.DataString);
+			CheckEqualsString(as2s(InputData), ss.DataString);
 		finally
 			ss.Free;
 		end;
 
 		//Check that both chunking methods match
-		CheckEquals(crc1, crc2, InputData);
+		CheckEquals(crc1, crc2, as2s(InputData));
 
 		//And return one of them to compare to the old way
 		Result := crc1;
@@ -3878,7 +3894,7 @@ class procedure TCRC32Stream.SelfTest;
 		crcOld := Self.CalcCRC32(InputString);
 		crcNew := CRCNewWay(InputString);
 
-		CheckEquals(crcOld, crcNew, InputString);
+		CheckEquals(crcOld, crcNew, as2s(InputString));
 	end;
 
 begin
