@@ -1477,7 +1477,9 @@ begin
 				CDFile.FileCommentLength := 0;
 				CDFile.DiskNumberStart := 0;
 				CDFile.InternalFileAttributes := LocalFile.VersionNeededToExtract;
+{$WARN SYMBOL_PLATFORM OFF}
 				CDFile.ExternalFileAttributes := faArchive;
+{$WARN SYMBOL_PLATFORM ON}
 				CDFile.RelativeOffsetOfLocalHeader := Poz;
 				CDFile.FileName := LocalFile.FileName;
 				L := Length(CDFile.FileName);
@@ -2364,7 +2366,9 @@ end;
 
 function TKAZipEntries.AddStream(FileName: string; Stream: TStream): TKAZipEntriesEntry;
 begin
+{$WARN SYMBOL_PLATFORM OFF}
 	Result := AddStream(FileName, faArchive, Now, Stream);
+{$WARN SYMBOL_PLATFORM ON}
 end;
 
 function TKAZipEntries.AddFile(FileName, NewFileName: string): TKAZipEntriesEntry;
@@ -2627,6 +2631,7 @@ begin
 		end;
 		if FParent.FApplyAttributes then
 		begin
+{$WARN SYMBOL_PLATFORM OFF}
 			Attr := faArchive;
 			if Item.FCentralDirectoryFile.ExternalFileAttributes and faHidden > 0 then
 				Attr := Attr or faHidden;
@@ -2635,6 +2640,7 @@ begin
 			if Item.FCentralDirectoryFile.ExternalFileAttributes and faReadOnly > 0 then
 				Attr := Attr or faReadOnly;
 			FileSetAttr(FileName, Attr);
+{$WARN SYMBOL_PLATFORM ON}
 		end;
 	end;
 end;
@@ -3740,7 +3746,9 @@ begin
 				stm.Free;
 			end;
 	}
+{$WARN SYMBOL_PLATFORM OFF}
 	Result := Entries.AddEntryThroughStream(FileName, Now, faArchive);
+{$WARN SYMBOL_PLATFORM ON}
 end;
 
 { TCRC32Stream }
