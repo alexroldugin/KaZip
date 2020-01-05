@@ -2836,7 +2836,7 @@ procedure TKAZipEntries.CreateFolder(FolderName: string; FolderDate: TDateTime);
 var
 	FN: string;
 begin
-	FN := IncludeTrailingBackslash(FolderName);
+	FN := IncludeTrailingPathDelimiter(FolderName);
 	AddFolderChain(FN, faDirectory, FolderDate);
 	FParent.FIsDirty := True;
 end;
@@ -2849,8 +2849,8 @@ var
 	X: Integer;
 	L: Integer;
 begin
-	FN := ToZipName(IncludeTrailingBackslash(FolderName));
-	NFN := ToZipName(IncludeTrailingBackslash(NewFolderName));
+	FN := ToZipName(IncludeTrailingPathDelimiter(FolderName));
+	NFN := ToZipName(IncludeTrailingPathDelimiter(NewFolderName));
 	L := Length(FN);
 	if IndexOf(NFN) = -1 then
 	begin
